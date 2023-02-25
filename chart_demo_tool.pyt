@@ -6,18 +6,18 @@ import arcpy
 class Toolbox(object):
 
     def __init__(self):
-        self.label = "Histogramify"
-        self.alias = "Histogramify"
+        self.label = "CreateMovingAverageCharts"
+        self.alias = "CreateMovingAverageCharts"
 
         self.tools = [
-            Histogramify
+            CreateMovingAverageCharts
         ]
 
-class Histogramify(object):
+class CreateMovingAverageCharts(object):
 
     def __init__(self):
-        self.label = "Histogramify"
-        self.description = "Bulk generate histograms"
+        self.label = "CreateMovingAverageCharts"
+        self.description = "Create moving average charts"
         self.canRunInBackground = False 
 
     def getParameterInfo(self):
@@ -31,42 +31,42 @@ class Histogramify(object):
             direction='Input'
         )
 
-        double_fields = arcpy.Parameter(
-           displayName='Double fields',
-           name='double_fields',
+        date_field = arcpy.Parameter(
+           displayName='Date field',
+           name='date_field',
            datatype='Field',
            parameterType='Required',
            direction='Input',
-           multiValue=True
         )
-        double_fields.filter.list = ["Double"]
-        double_fields.parameterDependencies = ['in_data']
+        date_field.filter.list = ['Date']
+        date_field.parameterDependencies = ['in_data']
 
-        show_mean = arcpy.Parameter(
-            displayName='Show mean',
-            name='show_mean',
-            datatype='Boolean',
-            parameterType='Optional',
+        numeric_field = arcpy.Parameter(
+            displayName='Numeric field',
+            name='numeric_field',
+            datatype='Field',
+            parameterType='Required',
             direction='Input',
-            category='Overlays'  
         )
+        numeric_field.filter.list = ['Short', 'Long', 'Double']
+        numeric_field.parameterDependencies = ['in_data']
 
-        show_median = arcpy.Parameter(
-            displayName='Show median',
-            name='show_median',
-            datatype='Boolean',
-            parameterType='Optional',
+        aggregation = arcpy.Parameter(
+            displayName='Aggregation',
+            name='aggregation',
+            datatype='GPString',
+            parameterType='Required',
             direction='Input',
-            category='Overlays'  
         )
-        
-        show_stdev = arcpy.Parameter(
-            displayName='Show standard deviation',
-            name='show_stdev',
-            datatype='Boolean',
-            parameterType='Optional',
+        aggregation.filter.type = 'ValueList'
+        aggregation.filter.list = ['None', 'Count', 'Sum', 'Mean', 'Median', 'Min', 'Max']
+
+        day_windows = arcpy.Parameter(
+            displayName='Moving Average Windows (Days)',
+            name='day_windows',
+            datatype='GPString',
+            parameterType='Required',
             direction='Input',
-            category='Overlays'  
         )
 
         out_data = arcpy.Parameter(
@@ -81,10 +81,10 @@ class Histogramify(object):
 
         return [
             in_data,
-            double_fields,
-            show_mean,
-            show_median,
-            show_stdev,
+            date_field,
+            numeric_field,
+            aggregation,
+            day_windows,
             out_data
         ]
 
@@ -100,22 +100,24 @@ class Histogramify(object):
     def execute(self, params, messages):
         """The source code of the tool."""
 
-        # get list of selected fields
-        fields = params[1].valueAsText.split(';')
-        show_mean = params[2].value
-        show_median = params[3].value
-        show_stdev = params[4].value
+        date_field = params[1].valueAsText
+        numeric_field = params[2].valueAsText
+        aggregation = params[3].valueAsText
+        day_windows = params[4].valueAsText
         out_data = params[5]
 
         # list of charts
         charts = []
 
         # loop over fields
-        for f in fields:
-            histogram = arcpy.charts.Histogram(x=f, showMean=show_mean, 
-                                                showMedian=show_median, showStandardDeviation=show_stdev, 
-                                                title=f"{f} histogram from tool")
-            charts.append(histogram)
+        for window in day_windows.split(','):
+            window_int = int(window)
+
+            bar = arcpy.charts.Bar(x=date_field, y=numeric_field, aggregation=aggregation,
+                                   showMovingAverage=True, movingAveragePeriod=window_int,
+                                   title=f"{aggregation.title()} of {numeric_field} By Date ({window_int} day window)",
+                                   xTitle='Date', yTitle='New Cases')
+            charts.append(bar)
 
         # add charts to the derived output layer
         out_data.charts = charts

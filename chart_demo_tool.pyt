@@ -109,10 +109,11 @@ class CreateMovingAverageCharts(object):
         # list of charts
         charts = []
 
-        # loop over fields
+        # loop over list of moving average windows
         for window in day_windows.split(','):
             window_int = int(window)
 
+            # create bar chart with window 
             bar = arcpy.charts.Bar(x=date_field, y=numeric_field, aggregation=aggregation,
                                    showMovingAverage=True, movingAveragePeriod=window_int,
                                    title=f"{aggregation.title()} of {numeric_field} By Date ({window_int} day window)",

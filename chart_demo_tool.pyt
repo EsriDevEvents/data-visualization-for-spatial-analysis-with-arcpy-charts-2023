@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+"""Script tool demonstrating how to include charts in a GP tool output. 
+"""
 
 import os
 import arcpy
@@ -98,7 +99,9 @@ class CreateMovingAverageCharts(object):
         return
 
     def execute(self, params, messages):
-        """The source code of the tool."""
+        """Create a bar chart for each moving average window specified 
+        and add to output.
+        """
 
         date_field = params[1].valueAsText
         numeric_field = params[2].valueAsText

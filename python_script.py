@@ -1,5 +1,5 @@
 """Script demonstrating how to automate the creation and export of pie charts 
-showing 2020 election breakdowns for each state.
+showing 2020 election vote breakdowns for each state.
 """
 
 

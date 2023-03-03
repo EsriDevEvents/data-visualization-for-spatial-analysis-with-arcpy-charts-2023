@@ -100,7 +100,7 @@ class CreateMovingAverageCharts(object):
 
     def execute(self, params, messages):
         """Create a bar chart for each moving average window specified 
-        and add to output.
+        and add all charts to the output.
         """
 
         date_field = params[1].valueAsText

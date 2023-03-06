@@ -2,7 +2,6 @@
 showing 2020 election vote breakdowns for each state.
 """
 
-
 import arcpy
 
 lyr = arcpy.mp.ArcGISProject('current').activeMap.listTables('election2020')[0]
